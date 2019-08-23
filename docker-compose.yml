@@ -1,0 +1,39 @@
+version: "3"
+services:
+  fpm:
+    restart: "no"
+    build: ./build/fpm
+    volumes:
+      - ./data/www:/var/www/html
+    environment:
+      APP_ENV: development
+      APP_DEBUG: 1
+      XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
+    links:
+      - db
+  nginx:
+    restart: "no"
+    build: ./build/nginx
+    volumes:
+      - ./data/www:/var/www/html
+      - ./data/www/public:/var/www/html/public
+      - ./data/nginx/log:/var/log/nginx
+    links:
+      - fpm
+    ports:
+      - "50050:80"
+  db:
+    restart: "no"
+    build: ./build/db
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: project_1024
+      MYSQL_DATABASE: project
+      MYSQL_USER: project
+      MYSQL_PASSWORD: project_1024
+  redis:
+    restart: "no"
+    image: redis:latest
+    volumes:
+      - ./data/redis:/data
