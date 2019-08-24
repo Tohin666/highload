@@ -22,6 +22,17 @@ services:
       XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
     links:
       - db
+  fpm3:
+    restart: "no"
+    build: ./build/fpm
+    volumes:
+      - ./data/www:/var/www/html
+    environment:
+      APP_ENV: development
+      APP_DEBUG: 1
+      XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
+    links:
+      - db
   nginx:
     restart: "no"
     build: ./build/nginx
@@ -32,6 +43,7 @@ services:
     links:
       - fpm1
       - fpm2
+      - fpm3
     ports:
       - "50050:80"
   db:
