@@ -1,6 +1,17 @@
 version: "3"
 services:
-  fpm:
+  fpm1:
+    restart: "no"
+    build: ./build/fpm
+    volumes:
+      - ./data/www:/var/www/html
+    environment:
+      APP_ENV: development
+      APP_DEBUG: 1
+      XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
+    links:
+      - db
+  fpm2:
     restart: "no"
     build: ./build/fpm
     volumes:
@@ -19,7 +30,8 @@ services:
       - ./data/www/public:/var/www/html/public
       - ./data/nginx/log:/var/log/nginx
     links:
-      - fpm
+      - fpm1
+      - fpm2
     ports:
       - "50050:80"
   db:
