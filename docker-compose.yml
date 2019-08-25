@@ -11,6 +11,7 @@ services:
       XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
     links:
       - db
+      - memcached
   fpm2:
     restart: "no"
     build: ./build/fpm
@@ -22,6 +23,7 @@ services:
       XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
     links:
       - db
+      - memcached
   fpm3:
     restart: "no"
     build: ./build/fpm
@@ -33,6 +35,7 @@ services:
       XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
     links:
       - db
+      - memcached
   nginx:
     restart: "no"
     build: ./build/nginx
@@ -61,3 +64,8 @@ services:
     image: redis:latest
     volumes:
       - ./data/redis:/data
+  memcached:
+    image: memcached:latest
+    ports:
+      - "11211:11211"
+    restart: always
