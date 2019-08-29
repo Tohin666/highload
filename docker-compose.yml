@@ -69,3 +69,15 @@ services:
     ports:
       - "11211:11211"
     restart: always
+  rabbitmq:
+    image: rabbitmq:3-management
+    volumes:
+      - ./data/rabbit:/var/lib/rabbitmq/mnesia
+    hostname: rabbit-mq
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: my_vhost
