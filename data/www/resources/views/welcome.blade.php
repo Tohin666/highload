@@ -1,8 +1,3 @@
-<?php
-$redis = new \App\Service\redisCacheProvider();
-$redis->set('key', 'value');
-echo $redis->get('key');
-?>
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>

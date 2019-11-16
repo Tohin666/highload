@@ -1,6 +1,6 @@
 version: "3"
 services:
-  fpm:
+  fpm1:
     restart: "no"
     build: ./build/fpm
     volumes:
@@ -11,6 +11,31 @@ services:
       XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
     links:
       - db
+      - memcached
+  fpm2:
+    restart: "no"
+    build: ./build/fpm
+    volumes:
+      - ./data/www:/var/www/html
+    environment:
+      APP_ENV: development
+      APP_DEBUG: 1
+      XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
+    links:
+      - db
+      - memcached
+  fpm3:
+    restart: "no"
+    build: ./build/fpm
+    volumes:
+      - ./data/www:/var/www/html
+    environment:
+      APP_ENV: development
+      APP_DEBUG: 1
+      XDEBUG_CONFIG: "remote_host=host.docker.internal remote_enable=1"
+    links:
+      - db
+      - memcached
   nginx:
     restart: "no"
     build: ./build/nginx
@@ -19,11 +44,13 @@ services:
       - ./data/www/public:/var/www/html/public
       - ./data/nginx/log:/var/log/nginx
     links:
-      - fpm
+      - fpm1
+      - fpm2
+      - fpm3
     ports:
       - "50050:80"
   db:
-    restart: "no"
+    restart: unless-stopped
     build: ./build/db
     volumes:
       - ./data/mysql:/var/lib/mysql
@@ -37,3 +64,54 @@ services:
     image: redis:latest
     volumes:
       - ./data/redis:/data
+  memcached:
+    image: memcached:latest
+    ports:
+      - "11211:11211"
+    restart: always
+  rabbitmq:
+    image: rabbitmq:3-management
+    volumes:
+      - ./data/rabbit:/var/lib/rabbitmq/mnesia
+    hostname: rabbit-mq
+    ports:
+      - '15672:15672'
+      - '5672:5672'
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+      RABBITMQ_DEFAULT_VHOST: my_vhost
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql:ubuntu-4.2-latest
+    ports:
+      - "10051:10051"
+    volumes:
+      - ./data/zabbix/alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - ./data/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
+      - ./data/zabbix/modules:/var/lib/zabbix/modules:ro
+      - ./data/zabbix/enc:/var/lib/zabbix/enc:ro
+      - ./data/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+      - ./data/zabbix/mibs:/var/lib/zabbix/mibs:ro
+      - ./data/zabbix/snmptraps:/var/lib/zabbix/snmptraps:ro
+    environment:
+      DB_SERVER_HOST: db
+      MYSQL_ROOT_PASSWORD: project_1024
+      MYSQL_DATABASE: project
+      MYSQL_USER: project
+      MYSQL_PASSWORD: project_1024
+    depends_on:
+      - db
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql:ubuntu-4.2-latest
+    ports:
+      - "8081:80"
+      - "8443:443"
+    environment:
+      DB_SERVER_HOST: db
+      MYSQL_ROOT_PASSWORD: project_1024
+      MYSQL_DATABASE: project
+      MYSQL_USER: project
+      MYSQL_PASSWORD: project_1024
+    depends_on:
+      - db
+      - zabbix-server

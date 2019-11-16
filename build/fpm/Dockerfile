@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update && \
     apt-get install -y libpq-dev git zlib1g-dev libicu-dev gcc  wget libxml2-dev libpng-dev && \
-    docker-php-ext-install pdo pdo_mysql zip intl soap gd bcmath opcache && \
+    docker-php-ext-install pdo pdo_mysql zip intl soap gd bcmath opcache sockets && \
     pecl install xdebug && \
     docker-php-ext-enable xdebug gd bcmath opcache
 
@@ -19,3 +19,6 @@ ENV TZ=Etc/UTC
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY php.ini /usr/local/etc/php/
+
+RUN composer require php-amqplib/php-amqplib
+RUN composer update
